@@ -20,7 +20,12 @@ let auth: Auth;
 
 // In Next.js, we need to handle SSR gracefully for Auth
 if (typeof window !== 'undefined') {
+  // If getAuth is called previously it throws when calling initializeAuth. 
+  // Let's use setPersistence instead or initializeAuth carefully.
   auth = getAuth(app);
+  import('firebase/auth').then(({ setPersistence, browserLocalPersistence }) => {
+    setPersistence(auth, browserLocalPersistence).catch(console.error);
+  });
 } else {
   // During SSR, we can still initialize auth but it won't have persistent state
   auth = getAuth(app);
