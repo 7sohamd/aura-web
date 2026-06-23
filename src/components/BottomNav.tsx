@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
@@ -13,6 +13,18 @@ export function BottomNav() {
   const { isAuthenticated } = useAuthStore();
   const { isInstallable, promptInstall } = usePWAInstall();
   const [showInstallHelp, setShowInstallHelp] = useState(false);
+  const [device, setDevice] = useState<'ios' | 'android' | 'other'>('other');
+
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    if (/ipad|iphone|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+      setDevice('ios');
+    } else if (/android/.test(ua)) {
+      setDevice('android');
+    } else {
+      setDevice('other');
+    }
+  }, []);
 
   // Do not show bottom nav on sign-in page
   if (!isAuthenticated || pathname === '/sign-in') {
@@ -74,8 +86,18 @@ export function BottomNav() {
                 To install this app on your device:
               </p>
               <ul className={styles.modalList}>
-                <li><strong>iOS:</strong> Tap the <strong>Share</strong> button and select <strong>Add to Home Screen</strong>.</li>
-                <li><strong>Android / PC:</strong> Tap the browser menu (⋮) and select <strong>Install App</strong> or <strong>Add to Home Screen</strong>.</li>
+                {device === 'ios' && (
+                  <li>Tap the <strong>Share</strong> button at the bottom of the screen and select <strong>Add to Home Screen</strong>.</li>
+                )}
+                {device === 'android' && (
+                  <li>Tap the browser menu (⋮) and select <strong>Install App</strong> or <strong>Add to Home Screen</strong>.</li>
+                )}
+                {device === 'other' && (
+                  <>
+                    <li><strong>iOS:</strong> Tap the <strong>Share</strong> button and select <strong>Add to Home Screen</strong>.</li>
+                    <li><strong>Android / PC:</strong> Tap the browser menu (⋮) and select <strong>Install App</strong> or <strong>Add to Home Screen</strong>.</li>
+                  </>
+                )}
               </ul>
               <button className={styles.modalClose} onClick={() => setShowInstallHelp(false)}>
                 Got it!
