@@ -171,3 +171,36 @@ export async function leaveRoom(roomId: string, uid: string): Promise<void> {
     memberCount: increment(-1),
   });
 }
+
+/**
+ * Update room name
+ */
+export async function updateRoomName(roomId: string, newName: string): Promise<void> {
+  await updateDoc(doc(db, 'rooms', roomId), {
+    roomName: newName,
+  });
+}
+
+/**
+ * Delete a room
+ */
+export async function deleteRoom(roomId: string): Promise<void> {
+  // Delete members subcollection
+  const membersRef = collection(db, 'rooms', roomId, 'members');
+  const membersSnap = await getDocs(membersRef);
+  const deleteMemberPromises = membersSnap.docs.map(docSnap => 
+    deleteDoc(doc(db, 'rooms', roomId, 'members', docSnap.id))
+  );
+  await Promise.all(deleteMemberPromises);
+  
+  // Delete transactions subcollection
+  const txRef = collection(db, 'rooms', roomId, 'transactions');
+  const txSnap = await getDocs(txRef);
+  const deleteTxPromises = txSnap.docs.map(docSnap => 
+    deleteDoc(doc(db, 'rooms', roomId, 'transactions', docSnap.id))
+  );
+  await Promise.all(deleteTxPromises);
+
+  // Delete the main room document
+  await deleteDoc(doc(db, 'rooms', roomId));
+}

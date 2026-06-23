@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getRoom, Room, RoomMember } from '@/services/roomService';
+import { getRoom, Room, RoomMember, updateRoomName, deleteRoom } from '@/services/roomService';
 import { transferAura } from '@/services/transferService';
 import { useAuthStore } from '@/stores/authStore';
 import { useMembers } from '@/hooks/useMembers';
@@ -30,6 +30,10 @@ export default function RoomPage() {
   const [selectedMember, setSelectedMember] = useState<RoomMember | null>(null);
   const [transferAmount, setTransferAmount] = useState<string>('');
   const [isTransferring, setIsTransferring] = useState(false);
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newRoomName, setNewRoomName] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -91,6 +95,37 @@ export default function RoomPage() {
     }
   };
 
+  const handleUpdateName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!room || !newRoomName.trim()) return;
+
+    setIsUpdating(true);
+    try {
+      await updateRoomName(room.roomId, newRoomName.trim());
+      setRoom({ ...room, roomName: newRoomName.trim() });
+      setIsEditingName(false);
+    } catch (error: any) {
+      console.error('Update room name error:', error);
+      alert(error.message || 'Failed to update room name.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!room) return;
+    const confirmDelete = window.confirm('Are you sure you want to delete this room? This action cannot be undone.');
+    if (!confirmDelete) return;
+
+    try {
+      await deleteRoom(room.roomId);
+      router.replace('/');
+    } catch (error: any) {
+      console.error('Delete room error:', error);
+      alert(error.message || 'Failed to delete room.');
+    }
+  };
+
   if (!isAuthenticated || isLoadingRoom) {
     return (
       <div className={styles.loadingContainer}>
@@ -115,7 +150,55 @@ export default function RoomPage() {
           <button className={styles.backButton} onClick={() => router.push('/')}>
             ← Back
           </button>
-          <h1 className={styles.roomName}>{room.roomName}</h1>
+          
+          <div className={styles.headerTop}>
+            {isEditingName ? (
+              <form onSubmit={handleUpdateName} className={styles.editNameForm}>
+                <Input
+                  value={newRoomName}
+                  onChange={(e) => setNewRoomName(e.target.value)}
+                  placeholder="New Room Name"
+                  maxLength={30}
+                  required
+                />
+                <Button type="submit" variant="primary" size="sm" title="Save" loading={isUpdating} />
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  title="Cancel" 
+                  onClick={() => setIsEditingName(false)} 
+                  disabled={isUpdating} 
+                />
+              </form>
+            ) : (
+              <div className={styles.titleRow}>
+                <h1 className={styles.roomName}>{room.roomName}</h1>
+                {user?.uid === room.ownerId && (
+                  <div className={styles.ownerActions}>
+                    <button 
+                      className={styles.iconButton} 
+                      onClick={() => {
+                        setNewRoomName(room.roomName);
+                        setIsEditingName(true);
+                      }}
+                      title="Edit Room Name"
+                    >
+                      ✎
+                    </button>
+                    <button 
+                      className={`${styles.iconButton} ${styles.deleteButton}`} 
+                      onClick={handleDeleteRoom}
+                      title="Delete Room"
+                    >
+                      🗑
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
           <p className={styles.roomIdLabel}>Room ID: <span className={styles.roomId}>{room.roomId}</span></p>
         </header>
 

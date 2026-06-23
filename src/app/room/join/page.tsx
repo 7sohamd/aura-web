@@ -81,7 +81,7 @@ export default function JoinRoomPage() {
             value={roomId}
             onChange={(e) => setRoomId(e.target.value.toUpperCase())}
             required
-            maxLength={10}
+            maxLength={20}
             style={{ textTransform: 'uppercase' }}
           />
           <div className={styles.actions}>
