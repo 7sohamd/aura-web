@@ -8,6 +8,7 @@ import { transferAura } from '@/services/transferService';
 import { useAuthStore } from '@/stores/authStore';
 import { useMembers } from '@/hooks/useMembers';
 import { useRoomTransactions } from '@/hooks/useTransactions';
+import { useOldAndroidScrollFix } from '@/hooks/useOldAndroidScrollFix';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -29,11 +30,14 @@ export default function RoomPage() {
   
   const [selectedMember, setSelectedMember] = useState<RoomMember | null>(null);
   const [transferAmount, setTransferAmount] = useState<string>('');
+  const [transferComment, setTransferComment] = useState<string>('');
   const [isTransferring, setIsTransferring] = useState(false);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useOldAndroidScrollFix();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -82,9 +86,11 @@ export default function RoomPage() {
         selectedMember.uid,
         selectedMember.username,
         selectedMember.photoURL,
-        amount
+        amount,
+        transferComment.trim() || undefined
       );
       setTransferAmount('');
+      setTransferComment('');
       setSelectedMember(null);
       // alert('Transfer successful!');
     } catch (error: any) {
@@ -249,6 +255,14 @@ export default function RoomPage() {
                           required
                           className={styles.transferInput}
                         />
+                        <Input
+                          type="text"
+                          placeholder="Add a comment (optional)"
+                          value={transferComment}
+                          onChange={(e) => setTransferComment(e.target.value)}
+                          maxLength={100}
+                          className={styles.transferInput}
+                        />
                         <Button
                           type="submit"
                           variant="primary"
@@ -273,12 +287,19 @@ export default function RoomPage() {
               ) : (
                 transactions.map((tx) => (
                   <div key={tx.id} className={styles.transactionCard}>
-                    <div className={styles.txUsers}>
-                      <span className={styles.txName}>{tx.senderUsername}</span>
-                      <span className={styles.txArrow}>→</span>
-                      <span className={styles.txName}>{tx.recipientUsername}</span>
+                    <div className={styles.txMain}>
+                      <div className={styles.txUsers}>
+                        <span className={styles.txName}>{tx.senderUsername}</span>
+                        <span className={styles.txArrow}>→</span>
+                        <span className={styles.txName}>{tx.recipientUsername}</span>
+                      </div>
+                      <span className={styles.txAmount}>+{tx.amount} AURA</span>
                     </div>
-                    <span className={styles.txAmount}>+{tx.amount} AURA</span>
+                    {tx.comment && (
+                      <div className={styles.txComment}>
+                        &quot;{tx.comment}&quot;
+                      </div>
+                    )}
                   </div>
                 ))
               )}

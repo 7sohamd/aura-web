@@ -22,7 +22,6 @@
 .container {
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
   padding: 24px;
 }
 
@@ -208,10 +207,18 @@
   border-top: 1px solid var(--color-border);
   padding-top: 16px;
   overflow: hidden;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 500px) {
+  .transferForm {
+    flex-direction: column;
+  }
 }
 
 .transferInput {
   flex: 1;
+  min-width: 120px;
 }
 
 .transactionsList {
@@ -220,10 +227,31 @@
   gap: 12px;
 }
 
-.transactionCard {
+.txAmount {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.txMain {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+}
+
+.txComment {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-border-light);
+}
+
+.transactionCard {
+  display: flex;
+  flex-direction: column;
   padding: 16px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -245,10 +273,4 @@
 
 .txArrow {
   color: var(--color-text-tertiary);
-}
-
-.txAmount {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-success);
 }

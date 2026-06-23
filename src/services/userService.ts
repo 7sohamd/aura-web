@@ -48,23 +48,9 @@ export async function getUser(uid: string): Promise<AuraUser | null> {
 /**
  * Upload profile picture to Firebase Storage
  */
-export async function uploadProfilePicture(uid: string, uri: string): Promise<string> {
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.onload = function () {
-      resolve(xhr.response);
-    };
-    xhr.onerror = function (e) {
-      console.log('XHR Error:', e);
-      reject(new TypeError('Network request failed'));
-    };
-    xhr.responseType = 'blob';
-    xhr.open('GET', uri, true);
-    xhr.send(null);
-  });
-
+export async function uploadProfilePicture(uid: string, fileOrBlob: Blob | File): Promise<string> {
   const storageRef = ref(storage, `profilePictures/${uid}`);
-  await uploadBytes(storageRef, blob);
+  await uploadBytes(storageRef, fileOrBlob);
   const downloadURL = await getDownloadURL(storageRef);
 
   // Update user document

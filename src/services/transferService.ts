@@ -25,6 +25,7 @@ export interface Transaction {
   roomId: string;
   roomName: string;
   createdAt: any;
+  comment?: string;
 }
 
 /**
@@ -39,7 +40,8 @@ export async function transferAura(
   recipientId: string,
   recipientUsername: string,
   recipientPhotoURL: string | null,
-  amount: number
+  amount: number,
+  comment?: string
 ): Promise<void> {
   if (senderId === recipientId) {
     throw new Error('Cannot send Aura to yourself.');
@@ -98,6 +100,7 @@ export async function transferAura(
     roomId,
     roomName,
     createdAt: serverTimestamp(),
+    ...(comment ? { comment } : {}),
   });
 }
 

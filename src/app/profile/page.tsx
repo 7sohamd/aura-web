@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '@/utils/cropImage';
 import styles from './page.module.css';
 
 export default function ProfilePage() {
@@ -23,6 +25,11 @@ export default function ProfilePage() {
   const [editUsername, setEditUsername] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,22 +49,40 @@ export default function ProfilePage() {
     return null;
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const objectUrl = URL.createObjectURL(file);
+    setCropImageSrc(objectUrl);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleSaveCrop = async () => {
+    if (!cropImageSrc || !croppedAreaPixels || !user) return;
+
     setIsUploading(true);
     try {
-      const objectUrl = URL.createObjectURL(file);
-      const downloadURL = await uploadProfilePicture(user.uid, objectUrl);
+      const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
+      if (!croppedBlob) throw new Error('Crop failed');
+      
+      const downloadURL = await uploadProfilePicture(user.uid, croppedBlob);
       updateProfile({ photoURL: downloadURL });
+      setCropImageSrc(null);
     } catch (error) {
+      console.error('Upload error:', error);
       alert('Could not upload profile picture.');
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -91,6 +116,54 @@ export default function ProfilePage() {
           <span className={styles.headerLabel}>PROFILE</span>
           <h1 className={styles.headerTitle}>Your Account</h1>
         </div>
+
+        {/* Crop Modal */}
+        {cropImageSrc && (
+          <div className={styles.cropModalOverlay}>
+            <div className={styles.cropModalContent}>
+              <h2 className={styles.cropTitle}>Position Profile Picture</h2>
+              <div className={styles.cropperContainer}>
+                <Cropper
+                  image={cropImageSrc}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  cropShape="round"
+                  showGrid={false}
+                  onCropChange={setCrop}
+                  onCropComplete={onCropComplete}
+                  onZoomChange={setZoom}
+                />
+              </div>
+              <div className={styles.cropControls}>
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  aria-labelledby="Zoom"
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className={styles.zoomSlider}
+                />
+              </div>
+              <div className={styles.cropActions}>
+                <Button 
+                  title="Cancel" 
+                  variant="ghost" 
+                  onClick={() => setCropImageSrc(null)} 
+                  disabled={isUploading}
+                />
+                <Button 
+                  title="Save" 
+                  variant="primary" 
+                  onClick={handleSaveCrop} 
+                  loading={isUploading}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Avatar Section */}
         <motion.div

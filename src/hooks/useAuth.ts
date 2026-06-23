@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/config/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '@/config/firebase';
 import { createOrGetUser } from '@/services/authService';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -16,6 +17,8 @@ export function useAuth() {
   } = useAuthStore();
 
   useEffect(() => {
+    let userUnsubscribe: (() => void) | undefined;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
@@ -24,16 +27,37 @@ export function useAuth() {
           if (isNew) {
             setShowWelcome(true);
           }
+
+          // Listen for real-time updates to the user's document
+          userUnsubscribe = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
+            if (docSnap.exists()) {
+              const newData = { uid: firebaseUser.uid, ...docSnap.data() } as any;
+              const currentState = useAuthStore.getState().user;
+              // Only update if data actually changed to prevent unnecessary re-renders
+              if (JSON.stringify(currentState) !== JSON.stringify(newData)) {
+                setUser(newData);
+              }
+            }
+          });
         } catch (error) {
           console.error('Error loading user:', error);
           setUser(null);
         }
       } else {
         setUser(null);
+        if (userUnsubscribe) {
+          userUnsubscribe();
+          userUnsubscribe = undefined;
+        }
       }
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      if (userUnsubscribe) {
+        userUnsubscribe();
+      }
+    };
   }, []);
 
   return { user, isLoading, isAuthenticated, showWelcome };

@@ -58,7 +58,6 @@
 }
 
 html {
-  height: 100%;
   color-scheme: dark;
 }
 
@@ -71,7 +70,7 @@ body {
 }
 
 body {
-  min-height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
@@ -109,3 +108,15 @@ input, textarea {
   user-select: text;
   -webkit-user-select: text;
 }
+
+/* Fix for scrolling issues on Android 12 and below */
+body.old-android-scroll-fix {
+  overscroll-behavior-y: auto;
+}
+
+body.old-android-scroll-fix main,
+body.old-android-scroll-fix section {
+  /* Prevent paint thrashing on scroll */
+  transform: translateZ(0);
+}
+

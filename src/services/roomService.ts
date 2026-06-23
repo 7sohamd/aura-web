@@ -11,6 +11,7 @@ import {
   onSnapshot,
   serverTimestamp,
   increment,
+  collectionGroup,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { generateRoomId } from '@/utils/generateRoomId';
@@ -144,22 +145,29 @@ export function subscribeToMembers(
  * Get all rooms a user is a member of
  */
 export async function getUserRooms(uid: string): Promise<Room[]> {
-  // Since Firestore doesn't support collection group queries on subcollections easily,
-  // we'll query all rooms and check membership
-  // For production, consider maintaining a userRooms subcollection on the user document
-  const roomsRef = collection(db, 'rooms');
-  const roomsSnap = await getDocs(roomsRef);
-  const rooms: Room[] = [];
-
-  for (const roomDoc of roomsSnap.docs) {
-    const memberRef = doc(db, 'rooms', roomDoc.id, 'members', uid);
-    const memberSnap = await getDoc(memberRef);
-    if (memberSnap.exists()) {
-      rooms.push(roomDoc.data() as Room);
+  // Use a collectionGroup query to find all 'members' documents where uid matches.
+  // This avoids fetching all rooms in the database and is O(User's Rooms) instead of O(Total Rooms).
+  const membersQuery = query(
+    collectionGroup(db, 'members'),
+    where('uid', '==', uid)
+  );
+  
+  const membersSnap = await getDocs(membersQuery);
+  
+  const roomPromises = membersSnap.docs.map(async (docSnap) => {
+    // The parent of the 'members' collection is the room document
+    const roomRef = docSnap.ref.parent.parent;
+    if (roomRef) {
+      const roomSnap = await getDoc(roomRef);
+      if (roomSnap.exists()) {
+        return roomSnap.data() as Room;
+      }
     }
-  }
+    return null;
+  });
 
-  return rooms;
+  const results = await Promise.all(roomPromises);
+  return results.filter((room): room is Room => room !== null);
 }
 
 /**
