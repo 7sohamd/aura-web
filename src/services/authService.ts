@@ -9,9 +9,12 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   serverTimestamp,
+  increment,
 } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
+import { updateUserAuraInAllRooms } from './roomService';
 
 export interface AuraUser {
   uid: string;
@@ -21,9 +24,10 @@ export interface AuraUser {
   auraBalance: number;
   createdAt: any;
   isNewUser: boolean;
+  lastDailyReward?: string;
 }
 
-const DEFAULT_AURA_BALANCE = 500000;
+const DEFAULT_AURA_BALANCE = 2000;
 
 /**
  * Create or retrieve user document after Google Sign-In
@@ -32,9 +36,31 @@ export async function createOrGetUser(user: User): Promise<{ auraUser: AuraUser;
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);
 
+  const today = new Date().toISOString().split('T')[0];
+
   if (userSnap.exists()) {
+    const data = userSnap.data() as AuraUser;
+    let isDailyUpdated = false;
+
+    if (data.lastDailyReward !== today) {
+      await updateDoc(userRef, {
+        auraBalance: increment(500),
+        lastDailyReward: today
+      });
+      data.auraBalance += 500;
+      data.lastDailyReward = today;
+      isDailyUpdated = true;
+    }
+
+    const authUser = { uid: user.uid, ...data } as AuraUser;
+
+    if (isDailyUpdated) {
+      // Also update in all rooms they are a part of
+      updateUserAuraInAllRooms(user.uid, 500).catch(console.error);
+    }
+
     return {
-      auraUser: { uid: user.uid, ...userSnap.data() } as AuraUser,
+      auraUser: authUser,
       isNew: false,
     };
   }
@@ -47,6 +73,7 @@ export async function createOrGetUser(user: User): Promise<{ auraUser: AuraUser;
     auraBalance: DEFAULT_AURA_BALANCE,
     createdAt: serverTimestamp(),
     isNewUser: true,
+    lastDailyReward: today,
   };
 
   await setDoc(userRef, newUser);

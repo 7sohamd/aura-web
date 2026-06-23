@@ -204,3 +204,22 @@ export async function deleteRoom(roomId: string): Promise<void> {
   // Delete the main room document
   await deleteDoc(doc(db, 'rooms', roomId));
 }
+
+/**
+ * Update user's aura balance in all rooms they are a member of
+ * Used for daily rewards and global balance changes
+ */
+export async function updateUserAuraInAllRooms(uid: string, incrementAmount: number): Promise<void> {
+  const roomsRef = collection(db, 'rooms');
+  const roomsSnap = await getDocs(roomsRef);
+  
+  for (const roomDoc of roomsSnap.docs) {
+    const memberRef = doc(db, 'rooms', roomDoc.id, 'members', uid);
+    const memberSnap = await getDoc(memberRef);
+    if (memberSnap.exists()) {
+      await updateDoc(memberRef, {
+        auraBalance: increment(incrementAmount)
+      });
+    }
+  }
+}
