@@ -52,7 +52,7 @@ export async function createOrGetUser(user: User): Promise<{ auraUser: AuraUser;
       isDailyUpdated = true;
     }
 
-    const authUser = { uid: user.uid, ...data } as AuraUser;
+    const authUser = { ...data, uid: user.uid } as AuraUser;
 
     if (isDailyUpdated) {
       // Also update in all rooms they are a part of
