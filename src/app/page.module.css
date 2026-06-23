@@ -1,142 +1,166 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
-  display: flex;
+.container {
   flex: 1;
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.scrollContent {
+  padding-bottom: 100px;
+}
+
+.hero {
+  padding: var(--spacing-xxl) var(--spacing-xxl) var(--spacing-xxxl);
+  position: relative;
+  overflow: hidden;
+}
+
+
+.heroGlow {
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  border-radius: 175px;
+  background-color: var(--color-glow-accent);
+  top: -80px;
+  right: -80px;
+  pointer-events: none;
+}
+
+.brandLabel {
+  font-family: var(--font-jetbrains);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--color-accent);
+  letter-spacing: 4px;
+  margin-bottom: var(--spacing-xxl);
+  display: block;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+  margin-top: calc(-1 * var(--spacing-xs));
+}
+
+.heroTitle {
+  font-family: var(--font-playfair);
+  font-size: 64px;
+  color: var(--color-text-primary);
+  font-weight: 400;
+}
+
+.builtByLabel {
+  font-family: var(--font-jetbrains);
+  font-size: 12px;
+  color: var(--color-accent);
+  opacity: 0.8;
+  letter-spacing: 2px;
+  margin-top: -8px;
+}
+
+.heroSubtitle {
+  font-family: var(--font-inter);
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  line-height: 26px;
+  margin-bottom: var(--spacing-xxxl);
+}
+
+.balanceCard {
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  padding-top: var(--spacing-xxl);
+  padding-bottom: var(--spacing-xxl);
 }
 
-.main {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
-}
-
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
-}
-
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
+.balanceLabel {
+  font-family: var(--font-jetbrains);
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  letter-spacing: 3px;
+  margin-bottom: var(--spacing-md);
   font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
-}
-
-.intro a {
+.balanceValue {
+  font-family: var(--font-inter);
   font-weight: 500;
-  color: var(--text-primary);
+  font-size: 44px;
+  color: var(--color-text-primary);
 }
 
-.ctas {
+.balanceUnit {
+  font-family: var(--font-jetbrains);
+  font-size: 12px;
+  color: var(--color-accent);
+  letter-spacing: 3px;
+  margin-top: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.ctaRow {
   display: flex;
   flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
+  gap: var(--spacing-md);
+  padding-left: var(--spacing-xxl);
+  padding-right: var(--spacing-xxl);
+  margin-bottom: var(--spacing-xxxl);
 }
 
-.ctas a {
+.ctaCard {
+  flex: 1;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-xl);
+  min-height: 120px;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
+  flex-direction: column;
+  justify-content: flex-end;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  width: fit-content;
+}
+
+.ctaIcon {
+  font-size: 24px;
+  color: var(--color-accent);
+  margin-bottom: var(--spacing-lg);
+}
+
+.ctaTitle {
+  font-family: var(--font-inter);
+  font-size: 16px;
+  color: var(--color-text-primary);
   font-weight: 500;
+  margin-bottom: var(--spacing-xxs);
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+.ctaSubtitle {
+  font-family: var(--font-inter);
+  font-size: 12px;
+  color: var(--color-text-tertiary);
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+.roomsSection {
+  padding-left: var(--spacing-xxl);
+  padding-right: var(--spacing-xxl);
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.sectionLabel {
+  font-family: var(--font-jetbrains);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  letter-spacing: 3px;
+  margin-bottom: var(--spacing-xl);
+  font-weight: 600;
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
-
-  .page {
-    --background: #000;
-    --foreground: #000;
-
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
+.roomsList {
+  display: flex;
+  flex-direction: column;
 }

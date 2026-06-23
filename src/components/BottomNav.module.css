@@ -1,0 +1,149 @@
+.navContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+  z-index: 100;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.navItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--color-text-tertiary);
+  transition: color 0.2s;
+}
+
+.navItem.active {
+  color: var(--color-accent);
+}
+
+.navItemInstall {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--color-primary);
+  margin-top: -20px;
+}
+
+.installIcon {
+  font-size: 24px;
+  width: 50px;
+  height: 50px;
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(242, 234, 211, 0.3);
+}
+
+.icon {
+  font-size: 24px;
+}
+
+.label {
+  font-family: var(--font-jetbrains);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.labelInstall {
+  font-family: var(--font-jetbrains);
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay-light);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background-color: var(--color-surface-elevated);
+  width: 100%;
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+  padding: var(--spacing-xxl);
+  border: 1px solid var(--color-border-light);
+  border-bottom: none;
+  padding-bottom: calc(var(--spacing-xxl) + env(safe-area-inset-bottom, 20px));
+}
+
+.modalTitle {
+  font-family: var(--font-playfair);
+  font-size: 28px;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
+  font-weight: 400;
+}
+
+.modalText {
+  font-family: var(--font-inter);
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-md);
+  line-height: 24px;
+}
+
+.modalList {
+  list-style: none;
+  margin-bottom: var(--spacing-xl);
+}
+
+.modalList li {
+  font-family: var(--font-inter);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 22px;
+  margin-bottom: var(--spacing-sm);
+  background-color: var(--color-surface);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.modalList strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.modalClose {
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  font-family: var(--font-inter);
+  font-weight: 600;
+  font-size: 16px;
+  width: 100%;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

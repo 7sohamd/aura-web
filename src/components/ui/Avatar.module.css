@@ -1,0 +1,25 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--color-surface);
+}
+
+.border {
+  border: 1px solid var(--color-border-light);
+}
+
+.placeholder {
+  background-color: var(--color-surface-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.initials {
+  font-family: var(--font-inter);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  line-height: 1;
+}

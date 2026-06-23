@@ -1,0 +1,68 @@
+.container {
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-family: var(--font-inter);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.inputWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.inputWrapper:focus-within {
+  border-color: rgba(242, 234, 211, 0.4);
+  box-shadow: 0 0 20px rgba(242, 234, 211, 0.15);
+}
+
+.iconContainer {
+  padding-left: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input {
+  flex: 1;
+  height: 52px;
+  padding: 0 var(--spacing-lg);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter);
+  font-size: 16px;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.inputWithIcon {
+  padding-left: var(--spacing-md);
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.errorBorder {
+  border-color: var(--color-error) !important;
+}
+
+.errorText {
+  font-family: var(--font-inter);
+  font-size: 12px;
+  color: var(--color-error);
+  margin-top: var(--spacing-xs);
+}
