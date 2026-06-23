@@ -1,0 +1,208 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getRoom, Room, RoomMember } from '@/services/roomService';
+import { transferAura } from '@/services/transferService';
+import { useAuthStore } from '@/stores/authStore';
+import { useMembers } from '@/hooks/useMembers';
+import { useRoomTransactions } from '@/hooks/useTransactions';
+import { Avatar } from '@/components/ui/Avatar';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import styles from './page.module.css';
+
+export default function RoomPage() {
+  const params = useParams();
+  const roomId = params.roomId as string;
+  const router = useRouter();
+  
+  const { user, isAuthenticated } = useAuthStore();
+  const { members, isLoading: isLoadingMembers } = useMembers(roomId);
+  const { transactions, isLoading: isLoadingTxs } = useRoomTransactions(roomId);
+  
+  const [room, setRoom] = useState<Room | null>(null);
+  const [isLoadingRoom, setIsLoadingRoom] = useState(true);
+  
+  const [selectedMember, setSelectedMember] = useState<RoomMember | null>(null);
+  const [transferAmount, setTransferAmount] = useState<string>('');
+  const [isTransferring, setIsTransferring] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/sign-in');
+      return;
+    }
+
+    const fetchRoom = async () => {
+      if (!roomId) return;
+      try {
+        const roomData = await getRoom(roomId);
+        if (!roomData) {
+          alert('Room not found.');
+          router.replace('/');
+          return;
+        }
+        setRoom(roomData);
+      } catch (error) {
+        console.error('Error fetching room:', error);
+      } finally {
+        setIsLoadingRoom(false);
+      }
+    };
+
+    fetchRoom();
+  }, [roomId, isAuthenticated, router]);
+
+  const handleTransfer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !room || !selectedMember || !transferAmount) return;
+
+    const amount = parseInt(transferAmount, 10);
+    if (isNaN(amount) || amount <= 0) {
+      alert('Please enter a valid amount.');
+      return;
+    }
+
+    setIsTransferring(true);
+    try {
+      await transferAura(
+        room.roomId,
+        room.roomName,
+        user.uid,
+        user.username,
+        user.photoURL,
+        selectedMember.uid,
+        selectedMember.username,
+        selectedMember.photoURL,
+        amount
+      );
+      setTransferAmount('');
+      setSelectedMember(null);
+      // alert('Transfer successful!');
+    } catch (error: any) {
+      console.error('Transfer error:', error);
+      alert(error.message || 'Transfer failed.');
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
+  if (!isAuthenticated || isLoadingRoom) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner} />
+      </div>
+    );
+  }
+
+  if (!room) return null;
+
+  return (
+    <div className={styles.container}>
+      <motion.div
+        className={styles.glowCircle}
+        animate={{ opacity: [0.1, 0.2, 0.1] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      
+      <main className={styles.content}>
+        {/* Header */}
+        <header className={styles.header}>
+          <button className={styles.backButton} onClick={() => router.push('/')}>
+            ← Back
+          </button>
+          <h1 className={styles.roomName}>{room.roomName}</h1>
+          <p className={styles.roomIdLabel}>Room ID: <span className={styles.roomId}>{room.roomId}</span></p>
+        </header>
+
+        <div className={styles.layout}>
+          {/* Members List */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Members ({members.length})</h2>
+            <div className={styles.membersList}>
+              {members.map((member, index) => (
+                <GlassCard 
+                  key={member.uid} 
+                  className={`${styles.memberCard} ${selectedMember?.uid === member.uid ? styles.selectedCard : ''}`}
+                >
+                  <div 
+                    className={styles.memberInfo} 
+                    onClick={() => {
+                      if (member.uid !== user?.uid) {
+                        setSelectedMember(selectedMember?.uid === member.uid ? null : member);
+                      }
+                    }}
+                  >
+                    <div className={styles.rankBadge}>#{index + 1}</div>
+                    <Avatar uri={member.photoURL} name={member.username} size={48} />
+                    <div className={styles.memberDetails}>
+                      <span className={styles.memberName}>
+                        {member.username} {member.uid === user?.uid && '(You)'}
+                      </span>
+                      <span className={styles.memberAura}>{member.auraBalance} AURA</span>
+                    </div>
+                  </div>
+                  
+                  {/* Transfer Form (Inline) */}
+                  <AnimatePresence>
+                    {selectedMember?.uid === member.uid && (
+                      <motion.form
+                        initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                        animate={{ height: 'auto', opacity: 1, marginTop: 16 }}
+                        exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                        className={styles.transferForm}
+                        onSubmit={handleTransfer}
+                      >
+                        <Input
+                          type="number"
+                          placeholder="Amount to send"
+                          value={transferAmount}
+                          onChange={(e) => setTransferAmount(e.target.value)}
+                          min={1}
+                          required
+                          className={styles.transferInput}
+                        />
+                        <Button
+                          type="submit"
+                          variant="primary"
+                          title="Send"
+                          loading={isTransferring}
+                          disabled={!transferAmount || isTransferring}
+                        />
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
+                </GlassCard>
+              ))}
+            </div>
+          </section>
+
+          {/* Transactions */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Recent Activity</h2>
+            <div className={styles.transactionsList}>
+              {transactions.length === 0 ? (
+                <EmptyState title="No activity yet" subtitle="Be the first to transfer Aura in this room!" />
+              ) : (
+                transactions.map((tx) => (
+                  <div key={tx.id} className={styles.transactionCard}>
+                    <div className={styles.txUsers}>
+                      <span className={styles.txName}>{tx.senderUsername}</span>
+                      <span className={styles.txArrow}>→</span>
+                      <span className={styles.txName}>{tx.recipientUsername}</span>
+                    </div>
+                    <span className={styles.txAmount}>+{tx.amount} AURA</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  );
+}
