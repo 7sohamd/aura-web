@@ -76,6 +76,8 @@ export async function createOrGetUser(user: User): Promise<{ auraUser: AuraUser;
     lastDailyReward: today,
   };
 
+  console.log('Creating new user with balance:', DEFAULT_AURA_BALANCE);
+
   await setDoc(userRef, newUser);
 
   return {
