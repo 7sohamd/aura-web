@@ -115,17 +115,15 @@ export default function ProfilePage() {
       }
 
       const subscription = await subscribeToPush();
-      if (subscription) {
-        await updateUserProfile(user.uid, { pushSubscription: JSON.parse(JSON.stringify(subscription)) });
-        updateProfile({ pushSubscription: JSON.parse(JSON.stringify(subscription)) });
-        setPushSuccess(true);
-        setTimeout(() => setPushSuccess(false), 3000);
-      } else {
-        alert('Failed to subscribe to push notifications. Make sure your browser supports it and the Service Worker is running.');
-      }
-    } catch (error) {
+      
+      await updateUserProfile(user.uid, { pushSubscription: JSON.parse(JSON.stringify(subscription)) });
+      updateProfile({ pushSubscription: JSON.parse(JSON.stringify(subscription)) });
+      setPushSuccess(true);
+      setTimeout(() => setPushSuccess(false), 3000);
+      
+    } catch (error: any) {
       console.error('Push subscription error:', error);
-      alert('Error enabling push notifications.');
+      alert(error.message || 'Error enabling push notifications.');
     } finally {
       setIsPushEnabling(false);
     }

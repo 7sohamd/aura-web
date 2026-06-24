@@ -11,28 +11,37 @@ export function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
-export async function subscribeToPush(): Promise<PushSubscription | null> {
+export async function subscribeToPush(): Promise<PushSubscription> {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    console.warn('Push messaging is not supported');
-    return null;
+    throw new Error('Push messaging is not supported by your browser');
   }
 
-  let registration;
+  let registration = await navigator.serviceWorker.getRegistration();
+  
+  if (!registration) {
+    try {
+      console.log('No service worker registered, attempting manual registration...');
+      registration = await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+    } catch (err: any) {
+      throw new Error(`Failed to manually register service worker: ${err.message}`);
+    }
+  }
+
+  // Wait for it to be ready
   try {
     registration = await Promise.race([
       navigator.serviceWorker.ready,
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Service worker timeout')), 5000))
     ]);
-  } catch (err) {
-    console.error('Service worker not ready:', err);
-    return null;
+  } catch (err: any) {
+    throw new Error(`Service worker not ready: ${err.message}`);
   }
 
   const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
   if (!vapidPublicKey) {
-    console.warn('VAPID public key is not set');
-    return null;
+    throw new Error('VAPID public key is missing from environment variables');
   }
 
   try {
@@ -41,8 +50,8 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
     });
     return subscription;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to subscribe the user: ', error);
-    return null;
+    throw new Error(`Push subscription failed: ${error.message}`);
   }
 }
