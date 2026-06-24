@@ -316,17 +316,20 @@ export default function ProfilePage() {
                 <span className={styles.infoLabel} style={{ marginBottom: 0 }}>PUSH NOTIFICATIONS</span>
               </div>
               <Button
-                title={user.pushSubscription ? "Enabled" : "Enable"}
+                title={user.pushSubscription ? "Re-subscribe" : "Enable"}
                 onClick={handleEnablePush}
                 variant={user.pushSubscription ? "secondary" : "primary"}
                 size="sm"
                 loading={isPushEnabling}
-                disabled={!!user.pushSubscription}
               />
             </div>
-            {!user.pushSubscription && (
+            {!user.pushSubscription ? (
               <span className={styles.editHint} style={{ display: 'block', marginTop: '8px', textAlign: 'left' }}>
                 Get notified when someone sends you Aura.
+              </span>
+            ) : (
+              <span className={styles.editHint} style={{ display: 'block', marginTop: '8px', textAlign: 'left' }}>
+                Push notifications are active. Click re-subscribe if you are not receiving them.
               </span>
             )}
           </GlassCard>
