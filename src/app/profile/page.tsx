@@ -59,8 +59,6 @@ export default function ProfilePage() {
 
     const objectUrl = URL.createObjectURL(file);
     setCropImageSrc(objectUrl);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
     
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
