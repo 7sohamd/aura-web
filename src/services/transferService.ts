@@ -12,6 +12,7 @@ import {
   runTransaction,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { addNotification } from './notificationService';
 
 export interface Transaction {
   id?: string;
@@ -130,6 +131,21 @@ export async function transferAura(
     } catch (error) {
       console.error('Failed to trigger push notification:', error);
     }
+  }
+
+  // Create in-app notification
+  try {
+    await addNotification(recipientId, {
+      type: 'AURA_RECEIVED',
+      senderId,
+      senderUsername,
+      amount,
+      roomId,
+      roomName,
+      ...(comment ? { comment } : {}),
+    });
+  } catch (error) {
+    console.error('Failed to add in-app notification:', error);
   }
 }
 

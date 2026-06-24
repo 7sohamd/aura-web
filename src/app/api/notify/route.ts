@@ -6,7 +6,7 @@ const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
 if (vapidPublicKey && vapidPrivateKey) {
   webPush.setVapidDetails(
-    'mailto:test@example.com',
+    'mailto:admin@aura-web.localhost',
     vapidPublicKey,
     vapidPrivateKey
   );
@@ -31,8 +31,11 @@ export async function POST(req: Request) {
     );
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending push notification:', error);
+    if (error.statusCode === 410) {
+      return NextResponse.json({ error: 'Subscription Gone' }, { status: 410 });
+    }
     return NextResponse.json({ error: 'Failed to send notification' }, { status: 500 });
   }
 }
