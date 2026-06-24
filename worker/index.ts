@@ -1,8 +1,10 @@
 // To get types for Service Worker
 /// <reference lib="webworker" />
-declare const self: ServiceWorkerGlobalScope;
+export default null;
 
-self.addEventListener('push', (event) => {
+const sw = self as any;
+
+sw.addEventListener('push', (event: any) => {
   const data = event.data?.json() ?? {};
   const title = data.title || 'New Notification';
   const options = {
@@ -14,15 +16,15 @@ self.addEventListener('push', (event) => {
     },
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(sw.registration.showNotification(title, options));
 });
 
-self.addEventListener('notificationclick', (event) => {
+sw.addEventListener('notificationclick', (event: any) => {
   event.notification.close();
   const urlToOpen = event.notification.data.url;
 
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+    sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients: any[]) => {
       // Check if there is already a window/tab open with the target URL
       for (let i = 0; i < windowClients.length; i++) {
         const client = windowClients[i];
@@ -31,8 +33,8 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
       // If not, open a new window/tab with the target URL
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(urlToOpen);
+      if (sw.clients.openWindow) {
+        return sw.clients.openWindow(urlToOpen);
       }
     })
   );

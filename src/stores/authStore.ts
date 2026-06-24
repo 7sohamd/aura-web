@@ -12,7 +12,7 @@ interface AuthState {
   setIsNewUser: (isNew: boolean) => void;
   setShowWelcome: (show: boolean) => void;
   updateBalance: (newBalance: number) => void;
-  updateProfile: (updates: Partial<Pick<AuraUser, 'username' | 'photoURL'>>) => void;
+  updateProfile: (updates: Partial<Pick<AuraUser, 'username' | 'photoURL' | 'pushSubscription'>>) => void;
   reset: () => void;
 }
 
