@@ -42,7 +42,7 @@ export function NotificationOverlay() {
     });
 
     // Listen to recent for the dropdown history
-    const unsubscribeRecent = subscribeToRecentNotifications(user.uid, 20, (notifications) => {
+    const unsubscribeRecent = subscribeToRecentNotifications(user.uid, 15, (notifications) => {
       setRecentNotifications(notifications);
     });
 

@@ -1,5 +1,7 @@
 import {
   signInWithCredential,
+  signInWithPopup,
+  signInAnonymously,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
@@ -15,6 +17,7 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
 import { updateUserAuraInAllRooms } from './roomService';
+import { addNotification } from './notificationService';
 
 export interface AuraUser {
   uid: string;
@@ -58,6 +61,15 @@ export async function createOrGetUser(user: User): Promise<{ auraUser: AuraUser;
     if (isDailyUpdated) {
       // Also update in all rooms they are a part of
       updateUserAuraInAllRooms(user.uid, 500).catch(console.error);
+      addNotification(user.uid, {
+        type: 'AURA_RECEIVED',
+        senderId: 'system',
+        senderUsername: 'System',
+        amount: 500,
+        roomId: 'daily',
+        roomName: 'Daily Reward',
+        comment: 'Daily Aura Bonus!'
+      }).catch(console.error);
     }
 
     return {
@@ -93,6 +105,23 @@ export async function createOrGetUser(user: User): Promise<{ auraUser: AuraUser;
 export async function signInWithGoogle(idToken: string) {
   const credential = GoogleAuthProvider.credential(idToken);
   const result = await signInWithCredential(auth, credential);
+  return createOrGetUser(result.user);
+}
+
+/**
+ * Sign in with Google Popup
+ */
+export async function signInWithGooglePopup() {
+  const provider = new GoogleAuthProvider();
+  const result = await signInWithPopup(auth, provider);
+  return createOrGetUser(result.user);
+}
+
+/**
+ * Sign in Anonymously
+ */
+export async function signInGuest() {
+  const result = await signInAnonymously(auth);
   return createOrGetUser(result.user);
 }
 

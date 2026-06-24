@@ -2,10 +2,13 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
-import { GoogleAuthProvider, signInWithPopup, signInAnonymously } from 'firebase/auth';
-import { auth } from '@/config/firebase';
-import { createOrGetUser } from '@/services/authService';
+
+const GlowBackground = dynamic(() => import('@/components/GlowBackground'), {
+  ssr: false,
+});
+import { signInWithGooglePopup, signInGuest } from '@/services/authService';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/Button';
 import styles from './page.module.css';
@@ -18,9 +21,7 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      const { auraUser, isNew } = await createOrGetUser(userCredential.user);
+      const { auraUser, isNew } = await signInWithGooglePopup();
       
       setUser(auraUser);
       if (isNew) setShowWelcome(true);
@@ -37,8 +38,7 @@ export default function SignInPage() {
   const handleGuestSignIn = async () => {
     setIsLoading(true);
     try {
-      const userCredential = await signInAnonymously(auth);
-      const { auraUser, isNew } = await createOrGetUser(userCredential.user);
+      const { auraUser, isNew } = await signInGuest();
       
       setUser(auraUser);
       if (isNew) setShowWelcome(true);
@@ -55,16 +55,7 @@ export default function SignInPage() {
   return (
     <div className={styles.container}>
       {/* Animated Glow Background */}
-      <motion.div
-        className={styles.glowCircle}
-        animate={{ opacity: [0.1, 0.25, 0.1] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className={styles.glowCircle2}
-        animate={{ opacity: [0.1, 0.25, 0.1] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-      />
+      <GlowBackground className1={styles.glowCircle} className2={styles.glowCircle2} />
 
       <div className={styles.content}>
         <motion.div

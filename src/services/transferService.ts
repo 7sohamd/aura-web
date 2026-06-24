@@ -10,6 +10,7 @@ import {
   where,
   serverTimestamp,
   runTransaction,
+  limit,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { addNotification } from './notificationService';
@@ -157,7 +158,7 @@ export function subscribeToTransactions(
   callback: (transactions: Transaction[]) => void
 ) {
   const txRef = collection(db, 'rooms', roomId, 'transactions');
-  const q = query(txRef, orderBy('createdAt', 'desc'));
+  const q = query(txRef, orderBy('createdAt', 'desc'), limit(50));
 
   return onSnapshot(q, (snapshot) => {
     const transactions = snapshot.docs.map((doc) => ({

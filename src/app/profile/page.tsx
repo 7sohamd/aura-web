@@ -12,8 +12,11 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
-import Cropper from 'react-easy-crop';
-import getCroppedImg from '@/utils/cropImage';
+import dynamic from 'next/dynamic';
+
+const CropModal = dynamic(() => import('@/components/CropModal'), {
+  ssr: false,
+});
 import { subscribeToPush } from '@/utils/push';
 import { Bell } from 'lucide-react';
 import styles from './page.module.css';
@@ -31,9 +34,6 @@ export default function ProfilePage() {
   const [pushSuccess, setPushSuccess] = useState(false);
   
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,18 +67,10 @@ export default function ProfilePage() {
     }
   };
 
-  const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  };
-
-  const handleSaveCrop = async () => {
-    if (!cropImageSrc || !croppedAreaPixels || !user) return;
-
+  const handleSaveCrop = async (croppedBlob: Blob) => {
+    if (!user) return;
     setIsUploading(true);
     try {
-      const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
-      if (!croppedBlob) throw new Error('Crop failed');
-      
       const downloadURL = await uploadProfilePicture(user.uid, croppedBlob);
       updateProfile({ photoURL: downloadURL });
       setCropImageSrc(null);
@@ -147,50 +139,12 @@ export default function ProfilePage() {
 
         {/* Crop Modal */}
         {cropImageSrc && (
-          <div className={styles.cropModalOverlay}>
-            <div className={styles.cropModalContent}>
-              <h2 className={styles.cropTitle}>Position Profile Picture</h2>
-              <div className={styles.cropperContainer}>
-                <Cropper
-                  image={cropImageSrc}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={1}
-                  cropShape="round"
-                  showGrid={false}
-                  onCropChange={setCrop}
-                  onCropComplete={onCropComplete}
-                  onZoomChange={setZoom}
-                />
-              </div>
-              <div className={styles.cropControls}>
-                <input
-                  type="range"
-                  value={zoom}
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  aria-labelledby="Zoom"
-                  onChange={(e) => setZoom(Number(e.target.value))}
-                  className={styles.zoomSlider}
-                />
-              </div>
-              <div className={styles.cropActions}>
-                <Button 
-                  title="Cancel" 
-                  variant="ghost" 
-                  onClick={() => setCropImageSrc(null)} 
-                  disabled={isUploading}
-                />
-                <Button 
-                  title="Save" 
-                  variant="primary" 
-                  onClick={handleSaveCrop} 
-                  loading={isUploading}
-                />
-              </div>
-            </div>
-          </div>
+          <CropModal
+            cropImageSrc={cropImageSrc}
+            onClose={() => setCropImageSrc(null)}
+            onSave={handleSaveCrop}
+            isUploading={isUploading}
+          />
         )}
 
         {/* Avatar Section */}

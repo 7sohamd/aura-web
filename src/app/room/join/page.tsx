@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
+
+const GlowBackground = dynamic(() => import('@/components/GlowBackground'), {
+  ssr: false,
+});
 import { joinRoom } from '@/services/roomService';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/Button';
@@ -47,11 +52,7 @@ export default function JoinRoomPage() {
 
   return (
     <div className={styles.container}>
-      <motion.div
-        className={styles.glowCircle}
-        animate={{ opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-      />
+      <GlowBackground className1={styles.glowCircle} />
       <div className={styles.content}>
         <motion.div
           initial={{ y: 30, opacity: 0 }}
