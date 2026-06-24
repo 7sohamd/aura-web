@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPushEnabling, setIsPushEnabling] = useState(false);
+  const [pushSuccess, setPushSuccess] = useState(false);
   
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -117,9 +118,10 @@ export default function ProfilePage() {
       if (subscription) {
         await updateUserProfile(user.uid, { pushSubscription: JSON.parse(JSON.stringify(subscription)) });
         updateProfile({ pushSubscription: JSON.parse(JSON.stringify(subscription)) });
-        alert('Push notifications enabled successfully!');
+        setPushSuccess(true);
+        setTimeout(() => setPushSuccess(false), 3000);
       } else {
-        alert('Failed to subscribe to push notifications.');
+        alert('Failed to subscribe to push notifications. Make sure your browser supports it and the Service Worker is running.');
       }
     } catch (error) {
       console.error('Push subscription error:', error);
@@ -312,13 +314,15 @@ export default function ProfilePage() {
           <GlassCard className={styles.infoCard}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Bell size={20} color="var(--primary)" />
-                <span className={styles.infoLabel} style={{ marginBottom: 0 }}>PUSH NOTIFICATIONS</span>
+                <Bell size={20} color={pushSuccess ? "var(--success, #10b981)" : "var(--primary)"} />
+                <span className={styles.infoLabel} style={{ marginBottom: 0 }}>
+                  {pushSuccess ? "ENABLED SUCCESSFULLY!" : "PUSH NOTIFICATIONS"}
+                </span>
               </div>
               <Button
-                title={user.pushSubscription ? "Re-subscribe" : "Enable"}
+                title={pushSuccess ? "Done!" : user.pushSubscription ? "Re-subscribe" : "Enable"}
                 onClick={handleEnablePush}
-                variant={user.pushSubscription ? "secondary" : "primary"}
+                variant={pushSuccess ? "secondary" : user.pushSubscription ? "secondary" : "primary"}
                 size="sm"
                 loading={isPushEnabling}
               />

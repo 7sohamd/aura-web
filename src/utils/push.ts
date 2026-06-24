@@ -17,7 +17,17 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
     return null;
   }
 
-  const registration = await navigator.serviceWorker.ready;
+  let registration;
+  try {
+    registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Service worker timeout')), 5000))
+    ]);
+  } catch (err) {
+    console.error('Service worker not ready:', err);
+    return null;
+  }
+
   const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
   if (!vapidPublicKey) {
