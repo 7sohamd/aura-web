@@ -14,6 +14,8 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '@/utils/cropImage';
+import { subscribeToPush } from '@/utils/push';
+import { Bell } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function ProfilePage() {
@@ -25,6 +27,7 @@ export default function ProfilePage() {
   const [editUsername, setEditUsername] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPushEnabling, setIsPushEnabling] = useState(false);
   
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -98,6 +101,31 @@ export default function ProfilePage() {
       alert('Could not update username.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleEnablePush = async () => {
+    setIsPushEnabling(true);
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        alert('Notification permission was denied.');
+        return;
+      }
+
+      const subscription = await subscribeToPush();
+      if (subscription) {
+        await updateUserProfile(user.uid, { pushSubscription: JSON.parse(JSON.stringify(subscription)) });
+        updateProfile({ pushSubscription: JSON.parse(JSON.stringify(subscription)) });
+        alert('Push notifications enabled successfully!');
+      } else {
+        alert('Failed to subscribe to push notifications.');
+      }
+    } catch (error) {
+      console.error('Push subscription error:', error);
+      alert('Error enabling push notifications.');
+    } finally {
+      setIsPushEnabling(false);
     }
   };
 
@@ -270,6 +298,37 @@ export default function ProfilePage() {
           <GlassCard className={styles.infoCard}>
             <span className={styles.infoLabel}>EMAIL</span>
             <span className={styles.infoValue}>{user.email}</span>
+          </GlassCard>
+        </motion.div>
+
+        {/* Notifications */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', delay: 0.45 }}
+          className={styles.infoContainer}
+          style={{ marginTop: '16px' }}
+        >
+          <GlassCard className={styles.infoCard}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Bell size={20} color="var(--primary)" />
+                <span className={styles.infoLabel} style={{ marginBottom: 0 }}>PUSH NOTIFICATIONS</span>
+              </div>
+              <Button
+                title={user.pushSubscription ? "Enabled" : "Enable"}
+                onClick={handleEnablePush}
+                variant={user.pushSubscription ? "secondary" : "primary"}
+                size="sm"
+                loading={isPushEnabling}
+                disabled={!!user.pushSubscription}
+              />
+            </div>
+            {!user.pushSubscription && (
+              <span className={styles.editHint} style={{ display: 'block', marginTop: '8px', textAlign: 'left' }}>
+                Get notified when someone sends you Aura.
+              </span>
+            )}
           </GlassCard>
         </motion.div>
 

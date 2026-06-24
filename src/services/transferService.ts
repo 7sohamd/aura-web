@@ -50,6 +50,8 @@ export async function transferAura(
     throw new Error('Minimum transfer is 1 Aura.');
   }
 
+  let recipientPushSubscription: any = null;
+
   await runTransaction(db, async (transaction) => {
     // Read sender's global balance
     const senderUserRef = doc(db, 'users', senderId);
@@ -66,7 +68,9 @@ export async function transferAura(
     const recipientSnap = await transaction.get(recipientUserRef);
     if (!recipientSnap.exists()) throw new Error('Recipient not found.');
 
-    const recipientBalance = recipientSnap.data().auraBalance;
+    const recipientData = recipientSnap.data();
+    const recipientBalance = recipientData.auraBalance;
+    recipientPushSubscription = recipientData.pushSubscription;
 
     // Update global balances
     transaction.update(senderUserRef, {
@@ -102,6 +106,31 @@ export async function transferAura(
     createdAt: serverTimestamp(),
     ...(comment ? { comment } : {}),
   });
+
+  // Trigger push notification if the recipient has a subscription
+  if (recipientPushSubscription) {
+    try {
+      let messageBody = `You received ${amount} Aura from ${senderUsername}!`;
+      if (comment) {
+        messageBody += `\nMessage: "${comment}"`;
+      }
+      
+      await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscription: recipientPushSubscription,
+          payload: {
+            title: 'Aura Received! ✨',
+            body: messageBody,
+            url: `/room/${roomId}`
+          }
+        })
+      });
+    } catch (error) {
+      console.error('Failed to trigger push notification:', error);
+    }
+  }
 }
 
 /**

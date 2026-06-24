@@ -25,6 +25,7 @@ export interface AuraUser {
   createdAt: any;
   isNewUser: boolean;
   lastDailyReward?: string;
+  pushSubscription?: any;
 }
 
 const DEFAULT_AURA_BALANCE = 2000;

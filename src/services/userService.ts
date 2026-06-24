@@ -17,7 +17,7 @@ import type { AuraUser } from './authService';
  */
 export async function updateUserProfile(
   uid: string,
-  updates: Partial<Pick<AuraUser, 'username' | 'photoURL'>>
+  updates: Partial<Pick<AuraUser, 'username' | 'photoURL' | 'pushSubscription'>>
 ): Promise<void> {
   // Update main user doc
   const userRef = doc(db, 'users', uid);
